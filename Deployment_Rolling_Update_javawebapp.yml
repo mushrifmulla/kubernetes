@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: java-app-deployment
+  namespace: test-ns
+spec:
+  replicas: 4
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 2
+  minReadySeconds: 30
+  selector:
+    matchLabels:
+      app: javawebapp
+  template:
+    metadata:
+      name: java-app-deployment
+      labels:
+        app: javawebapp
+    spec:
+      containers:
+      - name: java-app-rollingUpdate
+        image: mushrifmulla/java-web-app:2
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: java-app-deployment-recreate_svc
+  namespace: test-ns
+spec:
+  type: NodePort
+  selector:
+    app: javawebapp
+  ports:
+  - port: 80
+    targetPort: 9981
+    nodePort: 30015
+  
+

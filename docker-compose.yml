@@ -1,0 +1,34 @@
+
+
+services:
+  springapp:
+    image: mushrifmulla/spring-boot-app:1
+    ports:
+    - 8080:8080
+    environment:
+    - MONGO_DB_HOSTNAME=mongo
+    - MONGO_DB_USERNAME=devdb
+    - MONGO_DB_PASSWORD=devdb@123
+    networks:
+    - springappbridge
+    depends_on:
+    - mongo
+  
+  mongo:
+    image: mongo
+    environment:
+    - MONGO_INITDB_ROOT_USERNAME=devdb
+    - MONGO_INITDB_ROOT_PASSWORD=devdb@123
+    volumes:
+      - mongoVol:/data/db
+    networks:
+    - springappbridge
+
+volumes:
+  mongoVol:
+    driver: local
+
+networks:
+  springappbridge:
+    driver: bridge
+

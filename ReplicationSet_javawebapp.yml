@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: ReplicationSet
+metadata:
+  name: javarsapp
+  namespace: test-ns
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: javawebapp
+  template:
+    metadata:
+      labels:
+        app: javawebapp
+    spec:
+      containers:
+      - name: javaapp
+        image: mushrifmulla/java-web-app:2
+        ports:
+        - containerPort: 9981
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: javasvc
+  namespace: test-ns
+spec:
+  type: NodePort
+  selector:
+    app: javawebapp
+  ports:
+  - port: 80
+    targetPort: 9981
+    nodePort: 31550
+
+
+
+
