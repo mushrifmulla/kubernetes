@@ -1,0 +1,50 @@
+pipeline{
+    agent any
+    environment{
+        IMAGE_NAME = 'mushrifmulla/maven-web-application'
+        TAG = "${BUILD_NUMBER}"
+    }
+    tools{
+        maven 'maven3.9'
+    }
+    stages{
+        stage('git clone'){
+            steps{
+                git credentialsId: 'gitpass', url: 'https://github.com/mushrifmulla/maven-web-application.git'
+            }
+        }
+        stage('build'){
+            steps{
+                sh "mvn clean package"
+            }
+        }
+        stage('image'){
+            steps{
+                sh "docker build -t ${IMAGE_NAME}:${TAG} ."
+            }
+        }
+        stage('docker login and push'){
+            steps{
+                withCredentials([string(credentialsId: 'docker_login', variable: 'dockerPassword')]) {
+                sh "docker login -u mushrifmulla -p $dockerPassword"
+                sh "docker push ${IMAGE_NAME}:${TAG}"
+                }
+            }
+        }
+/*       stage('first time k8s deployment'){
+            steps{
+                sh "kubectl apply -f Requests_Limits_deployment.yml"
+            }
+        }
+*/
+        stage('deploy to k8s'){
+            steps{
+                sh "kubectl set image deployment/maven-app-requests-limits-deploy maven-app-deploy=mushrifmulla/maven-web-application:$TAG -n test-ns"
+            }
+        }
+        
+      }
+}
+
+
+
