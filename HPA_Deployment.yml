@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: java-app-hpa-deployment
+  namespace: test-ns
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: javawebapp-hpa
+  template:
+    metadata:
+      name: java-app-hpa_deployment
+      labels:
+        app: javawebapp-hpa
+    spec:
+      containers:
+      - name: java-app-hpa_deployment
+        image: mushrifmulla/java-web-app:2
+        ports:
+        - containerPort: 80
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: javawebapp-hpa
+  namespace: test-ns
+  spec:
+    scaleTargetRef:
+      apiVersion: apps/v1
+      kind: Deployment
+      name: java-app-hpa-deployment
+    minReplicas: 2
+    maxReplicas: 4
+    metrics:
+    - type: Resources
+      resources:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resources
+      resources:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 70
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: java-app-hpa-deployment-svc
+  namespace: test-ns
+spec:
+  type: NodePort
+  selector:
+    app: javawebapp-hpa
+  ports:
+  - port: 80
+    targetPort: 9981
+    nodePort: 30015
+  
